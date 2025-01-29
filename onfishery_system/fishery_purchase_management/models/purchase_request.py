@@ -229,50 +229,50 @@ class PurchaseRequest(models.Model):
 
     def _create_purchase_order(self):
 
-        products_to_order = {}
-        warning_msgs = []
+        # products_to_order = {}
+        # warning_msgs = []
 
         # Grup produk dan cek ketersediaan
-        for line in self.request_line_ids:
-            product = line.product_id
-            if product not in products_to_order:
-                products_to_order[product] = 0
-            products_to_order[product] += line.product_uom_qty
+        # for line in self.request_line_ids:
+        #     product = line.product_id
+        #     if product not in products_to_order:
+        #         products_to_order[product] = 0
+        #     products_to_order[product] += line.product_uom_qty
 
         # Cek ketersediaan untuk setiap produk
-        for product, qty in products_to_order.items():
-            availability = self._check_product_availability(product, qty)
-            if not availability['should_order']:
-                warning_msgs.append(
-                    f"Product {product.name}:\n"
-                    f"- Requested: {qty}\n"
-                    f"- Available: {availability['available']}\n"
-                    f"- Incoming from PO: {availability['incoming']}\n"
-                    f"- Other PR needs: {availability['other_pr']}\n"
-                    f"No need to create PO for this product."
-                )
-                # Hapus dari products_to_order jika tidak perlu dipesan
-                products_to_order.pop(product)
+        # for product, qty in products_to_order.items():
+        #     availability = self._check_product_availability(product, qty)
+        #     if not availability['should_order']:
+        #         warning_msgs.append(
+        #             f"Product {product.name}:\n"
+        #             f"- Requested: {qty}\n"
+        #             f"- Available: {availability['available']}\n"
+        #             f"- Incoming from PO: {availability['incoming']}\n"
+        #             f"- Other PR needs: {availability['other_pr']}\n"
+        #             f"No need to create PO for this product."
+        #         )
+        #         # Hapus dari products_to_order jika tidak perlu dipesan
+        #         products_to_order.pop(product)
 
         # Jika ada warning, tampilkan
-        if warning_msgs:
-            message = "Some products don't need to be ordered:\n\n" + "\n\n".join(warning_msgs)
-            return {
-                'warning': {
-                    'title': 'Products Available',
-                    'message': message
-                }
-            }
+        # if warning_msgs:
+        #     message = "Some products don't need to be ordered:\n\n" + "\n\n".join(warning_msgs)
+        #     return {
+        #         'warning': {
+        #             'title': 'Products Available',
+        #             'message': message
+        #         }
+        #     }
 
         # Jika tidak ada yang perlu dipesan
-        if not products_to_order:
-            raise UserError('All requested products are already available or incoming. No need to create PO.')
+        # if not products_to_order:
+        #     raise UserError('All requested products are already available or incoming. No need to create PO.')
 
         if self.request_type == 'investor':
             # Logic PO untuk PR Investor
             vendor_items = {}
             for line in self.request_line_ids:
-                if line.product_id in products_to_order:
+                # if line.product_id in products_to_order:
                     if line.product_id.seller_ids:
                         vendor = line.product_id.seller_ids[0].partner_id
                         if vendor not in vendor_items:
@@ -314,7 +314,7 @@ class PurchaseRequest(models.Model):
 
             # Group by vendor dan investor
             for line in self.request_line_ids:
-                if line.product_id in products_to_order:
+                # if line.product_id in products_to_order:
                     if not line.product_id.seller_ids:
                         raise UserError(f'No vendor defined for product: {line.product_id.name}')
 
