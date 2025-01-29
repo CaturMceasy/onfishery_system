@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequence for Project Purchase Request -->
+        <record id="seq_project_purchase_request" model="ir.sequence">
+            <field name="name">Project Purchase Request</field>
+            <field name="code">project.purchase.request</field>
+            <field name="prefix">PPR/%(year)s/%(month)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+            <field name="use_date_range" eval="True"/>
+        </record>
+
+        <!-- Sequence Range -->
+        <record id="seq_project_purchase_request_range" model="ir.sequence.date_range">
+            <field name="sequence_id" ref="seq_project_purchase_request"/>
+            <field name="date_from" eval="time.strftime('%Y-%m-01')"/>
+            <field name="date_to" eval="time.strftime('%Y-12-31')"/>
+            <field name="number_next">1</field>
+        </record>
+    </data>
+</odoo>

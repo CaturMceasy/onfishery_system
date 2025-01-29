@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_stock_picking_receipt_custom">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article o_report_layout_standard"
+                     style="width: 210mm; margin: 0; padding: 10mm; font-size: 10pt;">
+                    <table style="width: 100%; border-collapse: collapse; ">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <strong>Nama Badan:</strong>
+                                <span t-esc="res_company.name or ''"/>
+                            </td>
+                            <td style="width: 50%; text-align: right;">
+                                <h2 style="margin: 0;">BUKTI PENERIMAAN BARANG (BPnB)</h2>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table style="width: 100%; margin-top: 5mm; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 25%;">Nama Badan/Investor ID:</td>
+                            <td style="width: 25%;">
+                                <span t-esc="o.purchase_id.purchase_request_id.investor_id.name or ''"/>
+                            </td>
+                            <td style="width: 25%;">No BPnB:</td>
+                            <td style="width: 25%;">
+                                <span t-esc="o.name or ''"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Gudang:</td>
+                            <td>
+                                <span t-esc="o.location_dest_id.name or ''"/>
+                            </td>
+                            <td>Tanggal:</td>
+                            <td>
+                                <span t-field="o.date_done" t-options="{'widget': 'date'}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Diterima Dari:</td>
+                            <td>
+                                <span t-esc="o.partner_id.name or ''"/>
+                            </td>
+                            <td>No PO:</td>
+                            <td>
+                                <span t-esc="o.purchase_id.name or ''"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>No NR:</td>
+                            <td>
+                                <span t-esc="o.purchase_id.name or ''"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+
+                    <table style="width: 100%; margin-top: 5mm; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border: 1px solid black;">
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;">No</th>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;">Nama Barang</th>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;">Satuan</th>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;">Jumlah</th>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines" t-value="o.move_ids_without_package"/>
+                            <t t-foreach="lines" t-as="line">
+                                <t t-set="distributions"
+                                   t-value="o.pool_distribution_ids.filtered(lambda d: d.product_id.id == line.product_id.id)"/>
+                                <tr style="border: 1px solid black;">
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                        <t t-esc="line_index + 1"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 2mm;">
+                                        <span t-esc="line.product_id.name or ''"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                        <span t-esc="line.product_uom.name or ''"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: right;">
+                                        <span t-esc="line.quantity or 0"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 2mm;">
+                                        <t t-if="distributions">
+                                            <t t-foreach="distributions" t-as="dist">
+                                                <t t-if="dist.distribution_type == 'pool'">
+                                                    Kolam:
+                                                    <t t-esc="dist.pool_id.name or ''"/>
+                                                    -
+                                                    <t t-esc="dist.quantity or 0"/>
+                                                    <t t-esc="line.product_uom.name or ''"/>
+                                                    <br/>
+                                                </t>
+                                                <t t-elif="dist.distribution_type == 'investor'">
+                                                    Investor:
+                                                    <t t-esc="dist.investor_id.name or ''"/>
+                                                    -
+                                                    <t t-esc="dist.quantity or 0"/>
+                                                    <t t-esc="line.product_uom.name or ''"/>
+                                                    <br/>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                </tr>
+                            </t>
+                            <!-- Tambahkan baris kosong jika kurang dari 5 baris -->
+                            <t t-set="empty_rows" t-value="5 - len(lines)"/>
+                            <t t-foreach="range(empty_rows)" t-as="empty_row">
+                                <tr style="border: 1px solid black; height: 10mm;">
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: center;"></td>
+                                    <td style="border: 1px solid black; padding: 2mm;"></td>
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: center;"></td>
+                                    <td style="border: 1px solid black; padding: 2mm; text-align: right;"></td>
+                                    <td style="border: 1px solid black; padding: 2mm;"></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; margin-top: 10mm; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;" colspan="2">MANUAL</th>
+                                <th style="border: 1px solid black; padding: 2mm; text-align: center;" colspan="2">KOMPUTER</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Pengirim</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Diterima Oleh</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Diperiksa Oleh</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Diinput Oleh</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Tgl:</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Tgl:</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Tgl:</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">Tgl:</td>
+                            </tr>
+                            <tr style="height: 20mm;">
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                    <br/><br/><br/><br/><br/><br/><br/>
+                                    (.......................................)</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                    <br/><br/><br/><br/><br/><br/><br/>
+                                    (.......................................)</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                    <br/><br/><br/><br/><br/><br/><br/>
+                                    (.......................................)</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">
+                                    <br/><br/><br/><br/><br/><br/><br/>
+                                    (.......................................)</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">TTD dan NAMA JELAS</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">KEPALA GUDANG</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">INVENTORY / SPV</td>
+                                <td style="border: 1px solid black; padding: 2mm; text-align: center;">ADM INVENTORY</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="stock_picking_receipt_report_action" model="ir.actions.report">
+        <field name="name">Bukti Penerimaan Barang</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">fishery_purchase_management.report_stock_picking_receipt_custom</field>
+        <field name="report_file">fishery_purchase_management_stock_picking_receipt_report</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_us"/>
+    </record>
+</odoo>

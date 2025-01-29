@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_purchase_order_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article" style="border: 1px solid black; padding: 10px;">
+                    <!-- Header -->
+                    <table style="width: 100%; border-bottom: 1px solid black;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div style="font-weight: bold;"
+                                     t-esc="o.purchase_request_id.investor_id.name or '-'"/>
+                                <div style="white-space: pre-line;"
+                                     t-esc="o.purchase_request_id.investor_id.investor_address or '-'"/>
+                            </td>
+                            <td style="width: 50%; text-align: right;">
+                                <h2>Berita Acara Penerimaan Barang</h2>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Info Table -->
+                    <table style="width: 100%; margin-top: 10px; border-bottom: 1px solid black;">
+                        <tr>
+                            <td style="width: 10%;">Nomor PO</td>
+                            <td style="width: 40%;">:
+                                <span t-field="o.name"/>
+                            </td>
+                            <td style="width: 10%;">Tanggal</td>
+                            <td style="width: 40%;">:
+                                <span t-field="o.date_order" t-options="{'widget': 'date'}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Referensi PR</td>
+                            <td>:
+                                <span t-field="o.purchase_request_id.name"/>
+                            </td>
+                            <td>PO dari</td>
+                            <td>:
+                                <span t-field="o.investor_id.name"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Order Lines -->
+                    <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid black;">
+                                <th style="border: 1px solid black; padding: 5px; text-align: center;">No</th>
+                                <th style="border: 1px solid black; padding: 5px;">Nama Barang</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: center;">Satuan</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: center;">Jumlah</th>
+                                <th style="border: 1px solid black; padding: 5px;">Keterangan Distribusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.order_line" t-as="line">
+                                <tr style="border-bottom: 1px solid black;">
+                                    <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                                        <t t-esc="line_index + 1"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <span t-field="line.product_id.name"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                                        <span t-field="line.product_uom.name"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                                        <span t-field="line.product_qty"/>
+                                    </td>
+                                    <td style="border: 1px solid black; padding: 5px;">
+                                        <t t-set="distributions" t-value="o.pool_distribution_ids.filtered(lambda d: d.product_id.id == line.product_id.id)"/>
+                                        <t t-if="distributions">
+                                            <t t-foreach="distributions" t-as="dist">
+                                                <t t-if="dist.distribution_type == 'pool'">
+                                                    Kolam: <t t-esc="dist.pool_id.name"/> - <t t-esc="dist.quantity"/> <t t-esc="line.product_uom.name"/><br/>
+                                                </t>
+                                                <t t-elif="dist.distribution_type == 'investor'">
+                                                    Investor: <t t-esc="dist.investor_id.name"/> - <t t-esc="dist.quantity"/> <t t-esc="line.product_uom.name"/><br/>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Signatures -->
+                    <table style="width: 100%; margin-top: 50px;">
+                        <tr>
+                            <td style="width: 33%; text-align: center;">
+                                <div>Diserahkan Oleh</div>
+                                <div style="margin-top: 50px;">
+                                    <div t-field="o.create_uid.name"/>
+                                    <div>Tanggal:
+                                        <span t-field="o.date_order" t-options="{'widget': 'date'}"/>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 33%; text-align: center;">
+                                <div>Diterima Oleh</div>
+                                <div style="margin-top: 50px;">
+                                    <div>_______________</div>
+                                    <div>Tanggal: _________</div>
+                                </div>
+                            </td>
+                            <td style="width: 33%; text-align: center;">
+                                <div>Mengetahui</div>
+                                <div style="margin-top: 50px;">
+                                    <div>_______________</div>
+                                    <div>Tanggal: _________</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="purchase_order_receipt_report_action" model="ir.actions.report">
+        <field name="name">Berita Acara Penerimaan Barang</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">fishery_purchase_management.report_purchase_order_receipt</field>
+        <field name="report_file">fishery_purchase_management_purchase_order_receipt</field>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

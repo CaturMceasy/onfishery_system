@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_purchaseorder_document_custom">
+        <div class="article o_report_layout_standard" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+            <div class="page" style="font-family: Arial, sans-serif; font-size: 12px;">
+                <!-- Main Container with Border -->
+                <div style="border: 1px solid black; padding: 10px; margin: 10px;">
+                    <!-- Header Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid black;">
+                        <!-- Left Header -->
+                        <div style="border-right: 1px solid black; padding: 5px;">
+                            <strong style="font-size: 14px;">
+                                <span t-field="o.investor_id.name"/>
+                            </strong>
+                            <br/>
+                            <span t-field="o.investor_id.investor_address" style="white-space: pre-line;"/>
+                        </div>
+
+                        <!-- Right Header -->
+                        <div style="padding: 5px;">
+                            <div style="text-align: right; font-size: 16px; font-weight: bold; margin-bottom: 10px;">
+                                Purchase Order
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">PO Date</td>
+                                    <td style="border-bottom: 1px solid black;">:
+                                        <span t-field="o.date_order" t-options='{"format": "dd MMM yyyy"}'/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">PO Number</td>
+                                    <td style="border-bottom: 1px solid black;">:
+                                        <span t-field="o.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">Terms</td>
+                                    <td style="border-bottom: 1px solid black;">: Net 21</td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">Ship Via</td>
+                                    <td style="border-bottom: 1px solid black;">: FOB</td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">Expected Date</td>
+                                    <td style="border-bottom: 1px solid black;">:
+                                        <span t-field="o.date_planned"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">Vendor is Taxable</td>
+                                    <td style="border-bottom: 1px solid black;">: No</td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom: 1px solid black;">Rate</td>
+                                    <td style="border-bottom: 1px solid black;">: 1</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Vendor & Ship To Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid black;">
+                        <div style="border-right: 1px solid black; padding: 5px;">
+                            <strong>Vendor:</strong>
+                            <br/>
+                            <span t-field="o.partner_id.name"/>
+                            <br/>
+                            <span t-field="o.partner_id.street"/>
+                            <br/>
+                            <span t-field="o.partner_id.phone"/>
+                        </div>
+                        <div style="padding: 5px;">
+                            <strong>Ship To:</strong>
+                            <br/>
+                            <span t-field="o.investor_id.investor_address"/>
+                        </div>
+                    </div>
+
+                    <!-- Order Lines -->
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid black; padding: 5px; text-align: left;">Item</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: left;">Description</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Qty</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Unit Price</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: center;">Disc %</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: center;">Tax</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.order_line" t-as="line">
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="line.product_id.default_code"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="line.product_id.name"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.product_qty"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.price_unit"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                                    <span t-field="line.discount"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                                    <span t-esc="', '.join(map(lambda x: x.name, line.taxes_id))"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.price_subtotal"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Description Box -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; margin-top: 10px; gap: 10px;">
+                        <div>
+                            <div style="margin-bottom: 5px;">Say:
+                                <span t-esc="o.amount_total"
+                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </div>
+                            <div style="border: 1px solid black; padding: 5px;">
+                                <strong>Description</strong>
+                                <br/>
+                                <t t-if="o.pool_distribution_ids">
+                                    <t t-foreach="o.pool_distribution_ids" t-as="dist">
+                                        <span t-field="dist.product_id.name"/>:
+                                        <span t-field="dist.quantity"/>
+                                        <span t-field="dist.product_uom_id.name"/>
+                                        <br/>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <table style="width: 100%; margin-left: auto;">
+                                <tr>
+                                    <td>Sub Total:</td>
+                                    <td style="text-align: right;">
+                                        <span t-field="o.amount_untaxed"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Discount:</td>
+                                    <td style="text-align: right;">0</td>
+                                </tr>
+                                <tr>
+                                    <td>:</td>
+                                    <td style="text-align: right;">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Estimated Freight:</td>
+                                    <td style="text-align: right;">0</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Total Order:</strong>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <strong>
+                                            <span t-field="o.amount_total"/>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Signatures -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; margin-top: 20px;">
+                        <div>
+                            <div>Prepared By</div>
+                            <div style="margin-top: 50px;">Date: _________________</div>
+                        </div>
+                        <div>
+                            <div>Approved By</div>
+                            <div style="margin-top: 50px;">Date: _________________</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="flexible_delivery.report_purchaseorder_custom">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="flexible_delivery.report_purchaseorder_document_custom"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action -->
+    <record id="action_report_purchase_order_custom" model="ir.actions.report">
+        <field name="name">Custom Purchase Order</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">flexible_delivery.report_purchaseorder_custom</field>
+        <field name="report_file">flexible_delivery.report_purchaseorder_custom</field>
+        <field name="print_report_name">'PO - %s' % object.name</field>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

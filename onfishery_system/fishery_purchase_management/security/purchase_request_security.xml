@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Category for Purchase Request -->
+    <record id="module_category_purchase_request" model="ir.module.category">
+        <field name="name">Purchase Request</field>
+        <field name="description">Purchase Request Management</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Purchase Request User Group -->
+    <record id="group_purchase_request_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_purchase_request"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">User can create and validate purchase requests.</field>
+    </record>
+
+    <!-- Purchase Request Manager Group -->
+    <record id="group_purchase_request_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_purchase_request"/>
+        <field name="implied_ids" eval="[(4, ref('group_purchase_request_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        <field name="comment">Manager can approve and manage all purchase requests.</field>
+    </record>
+</odoo>

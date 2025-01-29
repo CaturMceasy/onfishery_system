@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_investor_tree" model="ir.ui.view">
+        <field name="name">res.investor.tree</field>
+        <field name="model">res.investor</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="total_pools"/>
+                <field name="investor_address"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_investor_form" model="ir.ui.view">
+        <field name="name">res.investor.form</field>
+        <field name="model">res.investor</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="name"/>
+                        <field name="investor_address"/>
+                        <field name="project_id"/>
+                        <field name="total_pools" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Kolam">
+                            <field name="pools_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="initial_capacity"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>
