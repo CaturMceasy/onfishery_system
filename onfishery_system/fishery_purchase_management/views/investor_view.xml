@@ -5,6 +5,7 @@
         <field name="model">res.investor</field>
         <field name="arch" type="xml">
             <tree>
+                <field name="code"/>
                 <field name="name"/>
                 <field name="total_pools"/>
                 <field name="investor_address"/>
@@ -21,6 +22,7 @@
                     <group>
                         <field name="partner_id"/>
                         <field name="name"/>
+                        <field name="code" placeholder="ABB" style="text-transform: uppercase"/>
                         <field name="investor_address"/>
                         <field name="project_id"/>
                         <field name="total_pools" readonly="1"/>

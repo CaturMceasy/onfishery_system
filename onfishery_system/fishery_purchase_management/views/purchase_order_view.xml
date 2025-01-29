@@ -26,7 +26,7 @@
         </field>
     </record>
 
-        <!-- View untuk RFQ Tree -->
+    <!-- View untuk RFQ Tree -->
     <record id="view_purchase_rfq_tree_inherit" model="ir.ui.view">
         <field name="name">purchase.order.rfq.tree.inherit</field>
         <field name="model">purchase.order</field>
@@ -47,6 +47,17 @@
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="investor_id" string="PO From" optional="show"/>
             </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.tree.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="before">
+                <field name="investor_id" optional="show"/>
+            </field>
         </field>
     </record>
 

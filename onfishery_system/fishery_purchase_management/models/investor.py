@@ -1,4 +1,6 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+from datetime import timedelta
 
 class ResInvestor(models.Model):
     _name = 'res.investor'
@@ -17,6 +19,52 @@ class ResInvestor(models.Model):
         default=lambda self: self.env.company,
         required=True
     )
+
+    # Field untuk menyimpan kode investor
+    code = fields.Char(string='Code', required=True, copy=False)
+    # Field untuk menyimpan sequence khusus investor ini
+    sequence_id = fields.Many2one('ir.sequence', string='Purchase Order Sequence', copy=False)
+
+    @api.model
+    def create(self, vals):
+        res = super(ResInvestor, self).create(vals)
+        if not res.sequence_id and res.code:
+            # Buat sequence baru dengan format yang diinginkan
+            sequence = self.env['ir.sequence'].create({
+                'name': f'PO Sequence for {res.name}',
+                'code': f'purchase.order.{res.code.lower()}',
+                'prefix': f'PO-{res.code}/%(year)s.%(month)s/',
+                'padding': 4,
+                'company_id': res.company_id.id,
+                'use_date_range': True,  # Aktifkan date range untuk reset bulanan
+            })
+            # Buat date range untuk bulan ini
+            current_date = fields.Date.today()
+            self.env['ir.sequence.date_range'].create({
+                'sequence_id': sequence.id,
+                'date_from': current_date.replace(day=1),  # Awal bulan
+                'date_to': current_date.replace(day=1, month=current_date.month % 12 + 1) - timedelta(days=1),
+                # Akhir bulan
+                'number_next': 1,
+            })
+            res.sequence_id = sequence.id
+        return res
+
+    @api.constrains('code')
+    def _check_code(self):
+        for record in self:
+            if record.code:
+                # Pastikan kode tepat 3 karakter
+                if len(record.code) != 3:
+                    raise UserError('Kode investor harus 3 karakter!')
+                # Pastikan kode unik
+                existing = self.search([
+                    ('code', '=', record.code),
+                    ('id', '!=', record.id)
+                ])
+                if existing:
+                    raise UserError(f'Kode investor {record.code} sudah digunakan!')
+
 
     @api.depends('pools_ids')
     def _compute_total_pools(self):

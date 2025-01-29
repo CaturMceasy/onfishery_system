@@ -9,6 +9,19 @@ class PurchaseOrderExtended(models.Model):
     pool_distribution_ids = fields.One2many('purchase.order.pool.distribution', 'purchase_id',
                                             string='Distribusi Kolam')
 
+    @api.model
+    def create(self, vals):
+        if vals.get('investor_id'):
+            investor = self.env['res.investor'].browse(vals['investor_id'])
+            if investor and investor.sequence_id:
+                # Gunakan sequence investor dengan format yang sudah ditentukan
+                vals['name'] = investor.sequence_id.next_by_id()
+                # Jika sequence untuk bulan ini belum ada, akan dibuat otomatis
+            else:
+                # Fallback ke sequence default jika tidak ada investor
+                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order')
+        return super(PurchaseOrderExtended, self).create(vals)
+
     @api.depends('purchase_request_id', 'purchase_request_id.investor_id', 'purchase_request_id.request_type')
     def _compute_investor_id(self):
         for po in self:
