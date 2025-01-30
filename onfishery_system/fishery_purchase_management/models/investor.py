@@ -20,9 +20,8 @@ class ResInvestor(models.Model):
         required=True
     )
 
-    # Field untuk menyimpan kode investor
-    code = fields.Char(string='Code', required=True, copy=False)
-    # Field untuk menyimpan sequence khusus investor ini
+    code = fields.Char(string='Investor Code', required=True, copy=False,
+                       help='Kode investor 3 karakter untuk nomor PO. Contoh: ABB')
     sequence_id = fields.Many2one('ir.sequence', string='Purchase Order Sequence', copy=False)
 
     @api.model
