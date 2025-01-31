@@ -9,17 +9,19 @@ class PurchaseOrderExtended(models.Model):
     pool_distribution_ids = fields.One2many('purchase.order.pool.distribution', 'purchase_id',
                                             string='Distribusi Kolam')
 
+
     @api.model
     def create(self, vals):
-        if vals.get('investor_id'):
-            investor = self.env['res.investor'].browse(vals['investor_id'])
-            if investor and investor.sequence_id:
-                # Gunakan sequence investor dengan format yang sudah ditentukan
-                vals['name'] = investor.sequence_id.next_by_id()
-                # Jika sequence untuk bulan ini belum ada, akan dibuat otomatis
-            else:
-                # Fallback ke sequence default jika tidak ada investor
-                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order')
+        # Jika PO dari PR investor
+        if vals.get('purchase_request_id'):
+            pr = self.env['purchase.request'].browse(vals['purchase_request_id'])
+            if pr.request_type == 'investor':
+                investor = pr.investor_id
+                if investor and investor.sequence_id:
+                    vals['name'] = investor.sequence_id.next_by_id()
+                else:
+                    vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order')
+
         return super(PurchaseOrderExtended, self).create(vals)
 
     @api.depends('purchase_request_id', 'purchase_request_id.investor_id', 'purchase_request_id.request_type')
@@ -63,6 +65,9 @@ class PurchaseOrderExtended(models.Model):
         """
         return self.env.ref('fishery_purchase_management.purchase_order_receipt_report_action').report_action(self)
 
+    def amount_to_text(self):
+        t = Terbilang()
+        return t.terbilang(int(self.amount_total))
 
 class PurchaseOrderPoolDistribution(models.Model):
     _name = 'purchase.order.pool.distribution'
@@ -97,3 +102,32 @@ class PurchaseOrderPoolDistribution(models.Model):
     def _compute_distribution_type(self):
         for record in self:
             record.distribution_type = 'pool' if record.pool_id else 'investor'
+
+
+class Terbilang:
+    def __init__(self):
+        self.angka = [
+            "", "Satu", "Dua", "Tiga", "Empat", "Lima",
+            "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh"
+        ]
+
+    def terbilang(self, n):
+        if n < 0:
+            return "minus " + self.terbilang(abs(n))
+        if n < 12:
+            return self.angka[n]
+        if n < 20:
+            return self.angka[n - 10] + " Belas"
+        if n < 100:
+            return self.angka[n // 10] + " Puluh " + self.angka[n % 10]
+        if n < 200:
+            return "Seratus " + self.terbilang(n - 100)
+        if n < 1000:
+            return self.angka[n // 100] + " Ratus " + self.terbilang(n % 100)
+        if n < 2000:
+            return "Seribu " + self.terbilang(n - 1000)
+        if n < 1000000:
+            return self.terbilang(n // 1000) + " Ribu " + self.terbilang(n % 1000)
+        if n < 1000000000:
+            return self.terbilang(n // 1000000) + " Juta " + self.terbilang(n % 1000000)
+        return self.terbilang(n // 1000000000) + " Milyar " + self.terbilang(n % 1000000000)

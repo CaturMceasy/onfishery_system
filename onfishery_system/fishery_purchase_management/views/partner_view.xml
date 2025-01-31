@@ -1,0 +1,38 @@
+<odoo>
+    <record id="view_partner_form_accurate" model="ir.ui.view">
+        <field name="name">res.partner.form.accurate</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="ref" position="after">
+                <field name="supplier_rank" invisible="1"/>
+                <field name="accurate_vendor_code"
+                       invisible="supplier_rank == 0"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_partner_form_accurate" model="ir.ui.view">
+        <field name="name">res.partner.form.accurate</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="ref" position="after">
+                <field name="accurate_vendor_code"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Menambahkan kolom di vendor tree view -->
+    <!-- Tree View -->
+    <record id="view_partner_tree_accurate" model="ir.ui.view">
+        <field name="name">res.partner.tree.accurate</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="after">
+                <field name="accurate_vendor_code" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

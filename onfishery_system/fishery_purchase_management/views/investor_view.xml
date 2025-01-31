@@ -36,6 +36,19 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Accurate Settings" name="accurate_settings">
+                            <group>
+                                <group string="Branch Settings">
+                                    <field name="accurate_branch_code"/>
+                                    <field name="accurate_exim_id"/>
+                                </group>
+                                <group string="Default Values">
+                                    <field name="accurate_dp_account_ref"/>
+                                    <field name="accurate_dept_id"/>
+                                    <field name="accurate_default_term"/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

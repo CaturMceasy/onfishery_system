@@ -61,5 +61,33 @@
         </field>
     </record>
 
+    <record id="action_export_accurate" model="ir.actions.server">
+        <field name="name">Export to Accurate</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+            action = records.action_export_accurate_multiple()
+        </field>
+    </record>
+
+    <!-- Menambahkan button export di form view -->
+    <record id="purchase_order_form_inherit_accurate" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.accurate</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <button name="button_confirm" position="before">
+                <button name="action_export_accurate"
+                        string="Export to Accurate"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not state in ['purchase', 'done'] or not investor_id"/>
+            </button>
+        </field>
+    </record>
+
 
 </odoo>

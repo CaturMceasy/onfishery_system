@@ -13,6 +13,7 @@
         'views/purchase_request_view.xml',
         'views/purchase_order_view.xml',
         'views/delivery_order_view.xml',
+        'views/partner_view.xml',
         'data/purchase_request_sequence.xml',
         # 'data/project_purchase_request_sequence.xml',
         'wizard/purchase_request_wizard.xml',

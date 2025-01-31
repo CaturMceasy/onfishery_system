@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_purchaseorder_custom">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article" style="border: 1px solid black; padding: 10px;">
+                    <!-- Header -->
+                    <table style="width: 100%; border-bottom: 1px solid black;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div style="font-weight: bold;" t-field="o.purchase_request_id.investor_id.name"/>
+                                <div style="white-space: pre-line;"
+                                     t-field="o.purchase_request_id.investor_id.investor_address"/>
+                            </td>
+                            <td style="width: 50%; text-align: right;">
+                                <h2>Purchase Order</h2>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Info Table -->
+                    <table style="width: 100%; margin-top: 10px; border-bottom: 1px solid black;">
+                        <tr>
+                            <td style="width: 10%;">Vendor</td>
+                            <td style="width: 40%; vertical-align: top;">:
+                                <div t-field="o.partner_id.name"/>
+                                <div t-field="o.partner_id.street"/>
+                                <div t-field="o.partner_id.street2"/>
+                                <div t-field="o.partner_id.city"/>
+                                <div t-field="o.partner_id.phone"/>
+                            </td>
+                            <td style="width: 10%;">PO Date</td>
+                            <td style="width: 40%;">:
+                                <span t-field="o.date_order" t-options="{'widget': 'date'}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ship To</td>
+                            <td style="vertical-align: top;">:
+                                <div t-field="o.purchase_request_id.investor_id.partner_id.street"/>
+                                <div t-field="o.purchase_request_id.investor_id.partner_id.street2"/>
+                                <div t-field="o.purchase_request_id.investor_id.partner_id.city"/>
+                            </td>
+                            <td>PO Number</td>
+                            <td>:
+                                <span t-field="o.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>Terms</td>
+                            <td>:
+                                <span t-field="o.payment_term_id.name"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Order Lines -->
+                    <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid black;">
+                                <th style="border: 1px solid black; padding: 5px;">Item</th>
+                                <th style="border: 1px solid black; padding: 5px;">Description</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Qty</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Unit Price</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Disc %</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Tax</th>
+                                <th style="border: 1px solid black; padding: 5px; text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.order_line" t-as="line" style="border-bottom: 1px solid black;">
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-esc="line.product_id.barcode or line.product_id.default_code or '-'"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px;">
+                                    <span t-field="line.name"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.product_qty"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.price_unit"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.discount"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.taxes_id"/>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px; text-align: right;">
+                                    <span t-field="line.price_subtotal"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Totals -->
+                    <table style="width: 100%; margin-top: 10px;">
+                        <tr>
+                            <td style="width: 60%; vertical-align: top;">
+                                <div>Say:
+                                    <span t-field="o.amount_total" t-options="{'widget': 'monetary'}"/>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <div>Description:</div>
+                                    <div style="white-space: pre-line;" t-field="o.notes"/>
+                                </div>
+                            </td>
+                            <td style="width: 40%; vertical-align: top;">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td>Sub Total:</td>
+                                        <td style="text-align: right;">
+                                            <span t-field="o.amount_untaxed"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Discount:</td>
+                                        <td style="text-align: right;">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Estimated Freight:</td>
+                                        <td style="text-align: right;">0.00</td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid black;">
+                                        <td>
+                                            <strong>Total Order:</strong>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <strong t-field="o.amount_total"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Signatures -->
+                    <table style="width: 100%; margin-top: 50px;">
+                        <tr>
+                            <td style="width: 50%;">
+                                <div>Prepared By</div>
+                                <div style="margin-top: 50px;">
+                                    <div t-field="o.create_uid.name"/>
+                                    <div>Date:
+                                        <span t-field="o.date_order" t-options="{'widget': 'date'}"/>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 50%;">
+                                <div>Approved By</div>
+                                <div style="margin-top: 50px;">
+                                    <div>_______________</div>
+                                    <div>Date: _________</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_purchase_order_custom" model="ir.actions.report">
+        <field name="name">Custom Purchase Order</field>
+        <field name="model">purchase.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">fishery_purchase_management.report_purchaseorder_custom</field>
+        <field name="report_file">fishery_purchase_management.report_purchaseorder_custom</field>
+        <field name="binding_model_id" ref="model_purchase_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

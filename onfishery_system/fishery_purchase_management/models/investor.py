@@ -11,7 +11,7 @@ class ResInvestor(models.Model):
     total_pools = fields.Integer(compute='_compute_total_pools', store=True)
     partner_id = fields.Many2one('res.partner', string='Partner Related', required=True)
     investor_address = fields.Text(string='Alamat', compute='_compute_partner_address', store=True)
-    project_id = fields.Many2one('res.comproject', string='Project', required=True)
+    project_id = fields.Many2one('res.comproject', string='Project')
 
     company_id = fields.Many2one(
         'res.company',

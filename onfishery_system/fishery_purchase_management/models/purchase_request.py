@@ -229,66 +229,34 @@ class PurchaseRequest(models.Model):
 
     def _create_purchase_order(self):
 
-        # products_to_order = {}
-        # warning_msgs = []
-
-        # Grup produk dan cek ketersediaan
-        # for line in self.request_line_ids:
-        #     product = line.product_id
-        #     if product not in products_to_order:
-        #         products_to_order[product] = 0
-        #     products_to_order[product] += line.product_uom_qty
-
-        # Cek ketersediaan untuk setiap produk
-        # for product, qty in products_to_order.items():
-        #     availability = self._check_product_availability(product, qty)
-        #     if not availability['should_order']:
-        #         warning_msgs.append(
-        #             f"Product {product.name}:\n"
-        #             f"- Requested: {qty}\n"
-        #             f"- Available: {availability['available']}\n"
-        #             f"- Incoming from PO: {availability['incoming']}\n"
-        #             f"- Other PR needs: {availability['other_pr']}\n"
-        #             f"No need to create PO for this product."
-        #         )
-        #         # Hapus dari products_to_order jika tidak perlu dipesan
-        #         products_to_order.pop(product)
-
-        # Jika ada warning, tampilkan
-        # if warning_msgs:
-        #     message = "Some products don't need to be ordered:\n\n" + "\n\n".join(warning_msgs)
-        #     return {
-        #         'warning': {
-        #             'title': 'Products Available',
-        #             'message': message
-        #         }
-        #     }
-
-        # Jika tidak ada yang perlu dipesan
-        # if not products_to_order:
-        #     raise UserError('All requested products are already available or incoming. No need to create PO.')
-
         if self.request_type == 'investor':
+            # Logic PO untuk PR Investor
             # Logic PO untuk PR Investor
             vendor_items = {}
             for line in self.request_line_ids:
-                # if line.product_id in products_to_order:
-                    if line.product_id.seller_ids:
-                        vendor = line.product_id.seller_ids[0].partner_id
-                        if vendor not in vendor_items:
-                            vendor_items[vendor] = {}
-                        if line.product_id not in vendor_items[vendor]:
-                            vendor_items[vendor][line.product_id] = []
-                        vendor_items[vendor][line.product_id].append(line)
+                if line.product_id.seller_ids:
+                    vendor = line.product_id.seller_ids[0].partner_id
+                    if vendor not in vendor_items:
+                        vendor_items[vendor] = {}
+                    if line.product_id not in vendor_items[vendor]:
+                        vendor_items[vendor][line.product_id] = []
+                    vendor_items[vendor][line.product_id].append(line)
 
             for vendor, products in vendor_items.items():
+                # Ambil sequence dari investor
+                sequence = self.investor_id.sequence_id
+                if not sequence:
+                    raise UserError(f'No sequence found for investor {self.investor_id.name}')
+
+                name = sequence.next_by_id()
+
                 po = self.env['purchase.order'].create({
                     'partner_id': vendor.id,
                     'purchase_request_id': self.id,
                     'origin': self.name,
+                    'name': name,
                     'notes': f'Investor: {self.investor_id.name}\nAlamat Pengiriman: {self.investor_id.investor_address}',
                 })
-
                 for product, lines in products.items():
                     total_qty = sum(line.product_uom_qty for line in lines)
                     po.order_line.create({
@@ -300,7 +268,6 @@ class PurchaseRequest(models.Model):
                         'date_planned': fields.Datetime.now(),
                         'name': product.name,
                     })
-
                     for line in lines:
                         self.env['purchase.order.pool.distribution'].create({
                             'purchase_id': po.id,
@@ -311,61 +278,43 @@ class PurchaseRequest(models.Model):
         else:
             # Logic untuk PR Project - PO per investor per vendor
             vendor_investor_items = {}
-
-            # Group by vendor dan investor
             for line in self.request_line_ids:
-                # if line.product_id in products_to_order:
-                    if not line.product_id.seller_ids:
-                        raise UserError(f'No vendor defined for product: {line.product_id.name}')
-
-                    vendor = line.product_id.seller_ids[0].partner_id
-                    investor = line.reference_id
-
-                    _logger.info(f"Line investor reference: {investor.name if investor else 'No Investor'}")
-
-                    if vendor not in vendor_investor_items:
-                        vendor_investor_items[vendor] = {}
-                    if investor not in vendor_investor_items[vendor]:
-                        vendor_investor_items[vendor][investor] = []
-
-                    vendor_investor_items[vendor][investor].append(line)
+                if not line.product_id.seller_ids:
+                    raise UserError(f'No vendor defined for product: {line.product_id.name}')
+                vendor = line.product_id.seller_ids[0].partner_id
+                investor = line.reference_id
+                if vendor not in vendor_investor_items:
+                    vendor_investor_items[vendor] = {}
+                if investor not in vendor_investor_items[vendor]:
+                    vendor_investor_items[vendor][investor] = {}
+                if line.product_id not in vendor_investor_items[vendor][investor]:
+                    vendor_investor_items[vendor][investor][line.product_id] = []
+                vendor_investor_items[vendor][investor][line.product_id].append(line)
 
             for vendor, investor_data in vendor_investor_items.items():
-                for investor, lines in investor_data.items():
-                    _logger.info(f"Creating PO for Vendor: {vendor.name}, Investor: {investor.name}")
+                for investor, products in investor_data.items():
+                    # Ambil sequence dari investor
+                    sequence = investor.sequence_id
+                    if not sequence:
+                        raise UserError(f'No sequence found for investor {investor.name}')
 
-                    # Group products for this investor
-                    product_lines = {}
-                    for line in lines:
-                        if line.product_id not in product_lines:
-                            product_lines[line.product_id] = []
-                        product_lines[line.product_id].append(line)
+                    name = sequence.next_by_id()
 
-                    # Create PO dengan menambahkan investor_id
-                    po_vals = {
-                        'partner_id': vendor.id,
-                        'purchase_request_id': self.id,
-                        'origin': self.name,
-                        'investor_id': investor.id,  # Pastikan investor.id ada
-                        'notes': f'Project: {self.project_id.name}',
-                    }
-
-                    _logger.info(f"PO Values - investor_id: {investor.id}")
                     po = self.env['purchase.order'].create({
                         'partner_id': vendor.id,
                         'purchase_request_id': self.id,
                         'origin': self.name,
-                        'investor_id': investor.id,  # akan langsung terisi karena readonly=False
+                        'name': name,
+                        'investor_id': investor.id,
                         'notes': f'Project: {self.project_id.name}',
                     })
 
-                    # Create PO lines
-                    for product, prod_lines in product_lines.items():
-                        total_qty = sum(line.product_uom_qty for line in prod_lines)
+                    # Create lines untuk setiap produk
+                    for product, lines in products.items():
+                        total_qty = sum(line.product_uom_qty for line in lines)
                         seller = product.seller_ids.filtered(lambda s: s.partner_id == vendor)[:1]
                         if not seller:
                             raise UserError(f'No price defined for product: {product.name} and vendor: {vendor.name}')
-
                         po.order_line.create({
                             'order_id': po.id,
                             'product_id': product.id,
@@ -375,9 +324,8 @@ class PurchaseRequest(models.Model):
                             'price_unit': seller.price,
                             'date_planned': fields.Datetime.now(),
                         })
-
                         # Create distribution
-                        for line in prod_lines:
+                        for line in lines:
                             self.env['purchase.order.pool.distribution'].create({
                                 'purchase_id': po.id,
                                 'investor_id': line.reference_id.id,
