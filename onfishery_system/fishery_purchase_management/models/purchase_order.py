@@ -1,4 +1,6 @@
 from odoo import models, fields, api
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 
 class PurchaseOrderExtended(models.Model):

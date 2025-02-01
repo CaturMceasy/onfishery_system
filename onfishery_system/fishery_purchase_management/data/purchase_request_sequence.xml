@@ -3,7 +3,7 @@
     <record id="seq_purchase_request" model="ir.sequence">
         <field name="name">Purchase Request Sequence</field>
         <field name="code">purchase.request</field>
-        <field name="prefix">PR-%(y)s%(month)s%(day)s-</field>
+        <field name="prefix">PPR/%(year)s/%(month)s/</field>
         <field name="padding">5</field>
         <field name="company_id" eval="False"/>
         <field name="use_date_range" eval="True"/>
@@ -12,8 +12,8 @@
     <record id="seq_purchase_request_monthly" model="ir.sequence.date_range">
         <field name="sequence_id" ref="seq_purchase_request"/>
         <field name="number_next">1</field>
-        <field eval="time.strftime('%Y-%m-01')" name="date_from"/>
-        <field eval="time.strftime('%Y-%m-31')" name="date_to"/>
+        <field eval="(datetime.now().replace(day=1)).strftime('%Y-%m-%d')" name="date_from"/>
+        <field eval="(datetime.now() + relativedelta(months=1, day=1, days=-1)).strftime('%Y-%m-%d')" name="date_to"/>
     </record>
 
 <!--    <record id="seq_purchase_order_custom" model="ir.sequence">-->
