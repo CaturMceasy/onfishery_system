@@ -4,7 +4,7 @@
     'category': 'Purchase',
     'summary': 'Manajemen Pembelian Perikanan',
     'description': 'Modul khusus manajemen pembelian untuk PT. ABC',
-    'depends': ['purchase', 'stock', 'base'],
+    'depends': ['purchase', 'stock', 'base','web'],
     'data': [
         'security/purchase_request_security.xml',
         'security/ir.model.access.csv',
@@ -20,6 +20,7 @@
         'views/report_purchase_order.xml',
         'views/report_purchase_order_receipt.xml',
         'views/report_receipt_order.xml',
+        'views/favicon.xml',
         # 'views/project_purchase_request_views.xml',
         'views/menu.xml',
     ],

@@ -194,40 +194,6 @@ class PurchaseRequest(models.Model):
                         'product_uom_qty': qty_per_company
                     })
 
-    def _check_product_availability(self, product, quantity, location=None):
-        # Get default location if not specified
-        if not location:
-            location = self.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
-
-        # Cek quantity on hand
-        available_qty = product.with_context(location=location.id).qty_available
-
-        # Cek incoming dari PO yang existing
-        incoming_qty = self.env['purchase.order.line'].search([
-            ('product_id', '=', product.id),
-            ('state', 'in', ['purchase', 'done']),
-            ('order_id.state', 'not in', ['cancel', 'draft'])
-        ]).mapped('product_qty')
-        total_incoming = sum(incoming_qty)
-
-        # Cek PR lain yang sudah confirmed tapi belum jadi PO
-        other_pr_qty = self.env['purchase.request.line'].search([
-            ('product_id', '=', product.id),
-            ('request_id.state', '=', 'confirmed'),
-            ('request_id', '!=', self.id)
-        ]).mapped('product_uom_qty')
-        total_other_pr = sum(other_pr_qty)
-
-        return {
-            'product': product,
-            'available': available_qty,
-            'incoming': total_incoming,
-            'other_pr': total_other_pr,
-            'total_available': available_qty + total_incoming,
-            'needed': quantity,
-            'should_order': quantity > (available_qty + total_incoming - total_other_pr)
-        }
-
     def _create_purchase_order(self):
 
         if self.request_type == 'investor':
