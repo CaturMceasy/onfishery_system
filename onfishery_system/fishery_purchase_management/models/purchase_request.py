@@ -2,7 +2,6 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
-
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -150,22 +149,23 @@ class PurchaseRequest(models.Model):
 
     def action_po_created(self):
         self._create_purchase_order()
-        pickings = self._create_delivery_order()
-        if pickings:
-            self.write({
-                'state': 'po_created',
-            })
-            # Jika ingin menampilkan semua DO yang dibuat
-            return {
-                'type': 'ir.actions.act_window',
-                'name': 'Delivery Orders',
-                'res_model': 'stock.picking',
-                'view_mode': 'tree,form',
-                'domain': [('id', 'in', [p.id for p in pickings])],
-                'target': 'current',
-            }
-        else:
-            raise UserError('Failed to create Delivery Order')
+        # pickings = self._create_delivery_order()
+        # if pickings:
+        self.write({
+            'state': 'po_created',
+        })
+        return self.action_view_po()
+        #     # Jika ingin menampilkan semua DO yang dibuat
+        #     return {
+        #         'type': 'ir.actions.act_window',
+        #         'name': 'Delivery Orders',
+        #         'res_model': 'stock.picking',
+        #         'view_mode': 'tree,form',
+        #         'domain': [('id', 'in', [p.id for p in pickings])],
+        #         'target': 'current',
+        #     }
+        # else:
+        #     raise UserError('Failed to create Delivery Order')
 
     def action_done(self):
         self.write({'state': 'done'})
