@@ -4,7 +4,7 @@
     'category': 'Purchase',
     'summary': 'Manajemen Pembelian Perikanan',
     'description': 'Modul khusus manajemen pembelian untuk PT. ABC',
-    'depends': ['purchase', 'stock', 'base','web'],
+    'depends': ['purchase', 'stock', 'base', 'web'],
     'data': [
         'security/purchase_request_security.xml',
         'security/ir.model.access.csv',
@@ -24,6 +24,11 @@
         # 'views/project_purchase_request_views.xml',
         'views/menu.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'fishery_purchase_management/static/src/js/favicon.js',
+        ],
+    },
     'installable': True,
     'application': True,
 }
