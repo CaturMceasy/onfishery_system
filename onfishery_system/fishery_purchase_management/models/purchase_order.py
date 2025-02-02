@@ -1,4 +1,6 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+from odoo.tools.translate import _
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
@@ -10,7 +12,6 @@ class PurchaseOrderExtended(models.Model):
     investor_id = fields.Many2one('res.investor', string='PO from', compute='_compute_investor_id', store=True)
     pool_distribution_ids = fields.One2many('purchase.order.pool.distribution', 'purchase_id',
                                             string='Distribusi Kolam')
-
 
     @api.model
     def create(self, vals):
@@ -70,6 +71,22 @@ class PurchaseOrderExtended(models.Model):
     def amount_to_text(self):
         t = Terbilang()
         return t.terbilang(int(self.amount_total))
+
+    def action_cancel_multiple_po(self):
+        for record in self:
+            if record.state not in ['draft', 'sent', 'to approve']:
+                raise UserError(
+                    _('Hanya Purchase Order dalam status Draft, RFQ Sent atau To Approve yang dapat dibatalkan.'))
+            for pick in record.picking_ids.filtered(lambda r: r.state != 'cancel'):
+                pick.action_cancel()
+            record.write({'state': 'cancel'})
+
+        # Return proper action dictionary
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+
 
 class PurchaseOrderPoolDistribution(models.Model):
     _name = 'purchase.order.pool.distribution'

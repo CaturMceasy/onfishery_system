@@ -41,6 +41,11 @@
                             type="object"
                             invisible="state != 'po_created'"
                             class="oe_highlight"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            invisible="state == 'cancel'"
+                            class="btn-secondary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,po_created,done"/>
                 </header>
                 <sheet>
@@ -131,7 +136,6 @@
             </p>
         </field>
     </record>
-
 
     <menuitem
             id="menu_purchase_request"

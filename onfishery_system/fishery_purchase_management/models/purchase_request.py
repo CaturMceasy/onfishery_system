@@ -46,7 +46,8 @@ class PurchaseRequest(models.Model):
         ('draft', 'Draft'),
         ('confirmed', 'Dikonfirmasi'),
         ('po_created', 'PO Dibuat'),
-        ('done', 'Selesai')
+        ('done', 'Selesai'),
+        ('cancel', 'Dibatalkan')
     ], default='draft')
 
     repeat_period = fields.Selection([
@@ -436,6 +437,36 @@ class PurchaseRequest(models.Model):
             f"Kolam {line.pool_id.name}: {line.product_uom_qty} {line.product_uom_id.name}"
             for line in lines
         ])
+
+    # method untuk cancel PR
+    def action_cancel(self):
+        self.ensure_one()
+        # Batalkan PO yang terkait jika ada
+        related_pos = self.env['purchase.order'].search([
+            ('purchase_request_id', '=', self.id),
+            ('state', 'not in', ['cancel'])
+        ])
+        for po in related_pos:
+            po.button_cancel()
+
+        # Batalkan DO yang terkait jika ada
+        related_pickings = self.env['stock.picking'].search([
+            ('purchase_request_id', '=', self.id),
+            ('state', 'not in', ['cancel', 'done'])
+        ])
+        for picking in related_pickings:
+            picking.action_cancel()
+
+        return self.write({'state': 'cancel'})
+
+    # Method untuk multiple cancel
+    def action_cancel_multiple_pr(self):
+        for record in self:
+            record.action_cancel()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
 
 class PurchaseRequestItemLine(models.Model):
