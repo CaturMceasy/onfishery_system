@@ -3,6 +3,7 @@ from odoo.exceptions import UserError
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import base64
+import re
 
 
 class ResInvestor(models.Model):
@@ -86,10 +87,19 @@ class PurchaseOrder(models.Model):
             total_amount = sum(int(line.product_qty * line.price_unit) for line in self.order_line)
             xml_parts.append(f'<POAMOUNT>{total_amount}</POAMOUNT>')
             xml_parts.append('<FREIGHT>0</FREIGHT>')
-            xml_parts.append('<TERMREF>C.O.D</TERMREF>')
+            
+            # Mendapatkan nama payment term
+            payment_term_name = self.payment_term_id.name if self.payment_term_id else ''
+            xml_parts.append(f'<TERMREF>{payment_term_name}</TERMREF>')
+            
+            # xml_parts.append('<TERMREF>C.O.D</TERMREF>')
             xml_parts.append('<FOB/>')
             xml_parts.append('<EXPECTED></EXPECTED>')
-            xml_parts.append('<DESCRIPTION/>')
+            
+            # Add notes to description
+            notes = self.notes.strip() if self.notes else ''
+            cleaned_notes = self.clean_html_tags(notes)
+            xml_parts.append(f'<DESCRIPTION>{cleaned_notes}</DESCRIPTION>')
 
             # Shipping Address
             address_lines = self.investor_id.investor_address.split('\n') if self.investor_id.investor_address else []
@@ -218,10 +228,21 @@ class PurchaseOrder(models.Model):
                         total_amount = sum(int(line.product_qty * line.price_unit) for line in order.order_line)
                         xml_parts.append(f'<POAMOUNT>{total_amount}</POAMOUNT>')
                         xml_parts.append('<FREIGHT>0</FREIGHT>')
-                        xml_parts.append('<TERMREF>C.O.D</TERMREF>')
+                        
+                        # xml_parts.append('<TERMREF>C.O.D</TERMREF>')
+                        payment_term_name = order.payment_term_id.name if order.payment_term_id else ''
+                        xml_parts.append(f'<TERMREF>{payment_term_name}</TERMREF>')
+
+
                         xml_parts.append('<FOB/>')
                         xml_parts.append('<EXPECTED></EXPECTED>')
-                        xml_parts.append('<DESCRIPTION/>')
+
+
+                        # Add notes to description
+                        notes = order.notes.strip() if order.notes else ''
+                        cleaned_notes = order.clean_html_tags(notes)
+                        xml_parts.append(f'<DESCRIPTION>{cleaned_notes}</DESCRIPTION>')
+                        # xml_parts.append('<DESCRIPTION/>')
 
                         # Shipping Address
                         address_lines = investor.investor_address.split('\n') if investor.investor_address else []
@@ -285,6 +306,23 @@ class PurchaseOrder(models.Model):
                 'url': f'/web/binary/download_multiple_attachments?attachment_ids={",".join(map(str, attachments))}',
                 'target': 'self',
             }
+        
+    def clean_html_tags(self, text):
+        """Menghapus tag HTML dari teks."""
+        if not text:
+            return ''
+        
+        # Menghapus tag <p> secara spesifik
+        # Menghapus semua HTML tags menggunakan regex
+        clean_text = re.sub(r'<[^>]+>', '', text)
+        
+        # Membersihkan whitespace berlebih
+        clean_text = ' '.join(clean_text.split())
+        
+        # Menghapus karakter khusus HTML jika ada
+        clean_text = clean_text.replace('&nbsp;', ' ').replace('&amp;', '&')
+        
+        return clean_text
 
     def _validate_accurate_export(self):
         """
